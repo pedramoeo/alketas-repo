@@ -28,7 +28,10 @@ class LatestView(LoginRequiredMixin, View):
     
     # displaying data only related to the user
     def get(self, request, *args, **kwargs):
-
+        """
+        initially we designate what kind of sorting algorithms must be created before we pull data
+        from the models and creating querysets.
+        """
         sort_order_task = request.GET.get('sort_order_task', 'date_created')
         sort_order_category = request.GET.get('sort_order_category', 'date_created')
 
