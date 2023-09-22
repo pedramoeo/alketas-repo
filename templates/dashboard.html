@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fa">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dashboard</title>
+    </head>
+    <body>
+        {% block content %}
+            <form method="POST">{% csrf_token %}
+                <img src="{{ profile.profile_picture.url }}" alt="profile picture">
+            </form>
+        {% endblock %}
+    </body>
+
+</html>
