@@ -37,11 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'account',
     'weather_app',
     'to_do_list',
     'flashcard',
+    'pages', 
+
     'rest_framework',
+    'rest_framework.authtoken',
 
 ]
 
@@ -88,6 +92,9 @@ DATABASES = {
 }
 
 
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -124,6 +131,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
 STATICFILES_DIRS = [
     BASE_DIR / 'static/',
 ]
@@ -140,7 +148,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 OPENWEATHER_API_KEY = 'e9c734dfc1014b73968ced07cf7160f8'
 
 
+# below's value depends on whether we're in the development process or not 
+# false for now since the project isn't deployed yet
+#REQUIRE_AUTH = False
+AUTH_USER_MODEL = "account.CustomUser"
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISIION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+
+
+
+LOGIN_REDIRECT_URL = '/dashboard'

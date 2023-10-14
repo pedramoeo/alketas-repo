@@ -1,371 +1,410 @@
+from typing import Any
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404
+from django.conf import settings
+
 
 
 from account.models import CustomUser
 from .models import Category, Task
-from .forms import CategoryForm, TaskForm
+from .forms import *
 from .serializers import *
 
+
 from django.views.generic import View, ListView
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_user_agents.utils import get_user_agent
+from django.contrib.auth import get_user_model
+from django.contrib.messages import constants as messages
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
-
-
+from django.utils import timezone
+import datetime
 
 
-# Create your views here.
+from rest_framework.pagination import PageNumberPagination
 
-# 1 - for the main latests' page of the to do list app
-class LatestView(LoginRequiredMixin, View):
-    
-    # displaying data only related to the user
+
+
+
+
+
+User = get_user_model()
+
+
+class CustomPagination(PageNumberPagination):
+    def get_page_size(self, request):
+        user_agent = get_user_agent(request)
+        if user_agent.is_mobile:
+            return 6
+        else:
+            return 10
+
+
+
+
+class LatestView(ListView):
+    template_name = 'todo-latest.html'
+
     def get(self, request, *args, **kwargs):
-        """
-        initially we designate what kind of sorting algorithms must be created before we pull data
-        from the models and creating querysets.
-        """
-        sort_order_task = request.GET.get('sort_order_task', 'date_created')
-        sort_order_category = request.GET.get('sort_order_category', 'date_created')
-
-        if sort_order_task not in ['date_created', '-date_created', 'is_complete', '-is_complete', 'is_pinned', '-is_pinned', 'due_time', '-due_time']:
-            sort_order_task = 'date_created'
-
-        if sort_order_category not in ['date_created', '-date_created', 'is_pinned', '-is_pinned', 'category_colour', '-category_colour']:
-            sort_order_category = 'date_created'
-
-        latest_category = Category.objects.filter(user=request.user).order_by(sort_order_category)[:5]
-        latest_task = Task.objects.filter(user=request.user).order_by(sort_order_task)[:5]
+        
+        task_list = Task.objects.all().order_by('-date_created')[:5]
+        category_list = Category.objects.all().order_by('-date_created')[:5]
 
         context = {
-            'latest_category': latest_category,
-            'latest_task': latest_task,
-            'sort_order_task': sort_order_task,
-            'sort_order_category': sort_order_category,
+            "task_list": task_list,
+            "category_list": category_list,
         }
-
-        return render(request, 'lastest.html', context)
-
-
-
-
-class LatestAPIView(APIView):
-
-    def get(self, request, *args, **kwargs):
-        try:
-            user = CustomUser.objects.get(username=request.user.username)
-        except ObjectDoesNotExist:
-            user = None
-
-        sort_order_task = request.GET.get('sort_order_task', 'date_created')
-        sort_order_category = request.GET.get('sort_order_category', 'date_created')
-
-        if sort_order_task not in ['date_created', '-date_created', 'is_complete', '-is_complete', 'is_pinned', '-is_pinned', 'due_time', '-due_time']:
-            sort_order_task = 'date_created'
-
-        if sort_order_category not in ['date_created', '-date_created', 'is_pinned', '-is_pinned', 'category_colour', '-category_colour']:
-            sort_order_category = 'date_created'
-
-        latest_category = Category.objects.filter(user=user).order_by(sort_order_category)[:5]
-        latest_task = Task.objects.filter(user=user).order_by(sort_order_task)[:5]
-
-        category_serializer = CategorySerializer(latest_category, many=True)
-        task_serializer = TaskSerializer(latest_task, many=True)
-
-        return Response({
-            'latest_category': category_serializer.data,
-            'latest_task': task_serializer.data,
-            'sort_order_task': sort_order_task,
-            'sort_order_category': sort_order_category,
-        })
-        
-
-
-
-
-# for the webpage dedicated to viewing list of all categories
-class AllCategoryView(LoginRequiredMixin, ListView):
-    template_name = 'categories.html'
-    model = Category
+        return render(request, self.template_name, context)
     
-    def get_paginate_by(self, queryset):
-        user_agent = get_user_agent(self.request)
-        if user_agent.is_mobile:
-            return 5
-        else:
-            return 8
+    
+
+
+
+
+
+# 1 - for the main latests' page of the to do list app
+
+
+class AllCategoryView(ListView):
+    template_name = "todo-list/all-todo-categories.html"
+    model = Category
+    paginator_class = CustomPagination
 
     def get_queryset(self):
-        category_id = self.kwargs.get('category_id', None)
-        if category_id is not None:
-            queryset = Category.objects.filter(user=self.request.user, id=category_id)
+        sort_order_category = self.request.GET.get('sort_order_category', 'date_created')
+
+        if sort_order_category == "newest":
+            queryset = Category.objects.filter(user=self.request.user).order_by('-date_created')
+        elif sort_order_category == "oldest":
+            queryset = Category.objects.filter(user=self.request.user).order_by('date_created') 
+        elif sort_order_category == "category_colour":
+            queryset = Category.objects.filter(user=self.request.user).order_by('category_colour')
+        elif sort_order_category == "is_pinned":
+            queryset = Category.objects.filter(user=self.request.user).order_by('-is_pinned')
         else:
             queryset = Category.objects.filter(user=self.request.user)
+
+        
         return queryset
+    
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
 
         if "add_category" in request.POST:
-            form = FlashcardcategoryCreationForm(request.POST)
+            form = CategoryForm(request.POST)
             if form.is_valid():
                 category = form.save(commit=False)
                 category.user = request.user
                 category.save()
-
-        elif "change_category_colour" in request.POST:
-            category_id = request.POST.get('category_id')
-            new_colour = request.POST.get('new_colour')
-            category = Category.objects.get(id=category_id, user=request.user)
-            category.category_colour = new_colour
-            category.save()
-
+            else:
+                # rerender the form if it wasn't valid
+                return self.render_to_response(self.get_context_data(form=form))
+            
         elif "delete_category" in request.POST:
             category_id = request.POST.get('category_id')
-            category = Category.objects.get(id=category_id, user=request.user)
-            category.delete()
-            return redirect('categories')
+            try:
+                category = Category.objects.get(id=category_id, user=request.user)
+                category.delete()
+            except Category.DoesNotExist:
+                messages.error(request, 'The category does not exist.')
         
         elif "delete_all_categories" in request.POST:
             category_ids = request.POST.getlist('category_ids')
             for category_id in category_ids:
-                category = Category.objects.get(id=category_id, user=request.user)
-                category.delete()
-            return redirect('categories')
-        
+                try:
+                    category = Category.objects.filter(id=category_id)
+                    category.delete()
+                except Category.DoesNotExist:
+                    messages.error(request, "The category does not exist.")
 
-
-
-class AllCategoryAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        category_id = self.kwargs.get('category_id', None)
-        if category_id is not None:
-            queryset = Category.objects.filter(user=request.user, id=category_id)
-        else:
-            queryset = Category.objects.filter(user=request.user)
-        # Serialize the data
-        category_serializer = CategorySerializer(queryset, many=True)
-        return Response(category_serializer.data)
-
-
-    def post(self, request, *args, **kwargs):
-        user = request.user
-
-        if "add_category" in request.data:
-            form = FlashcardcategoryCreationForm(request.data)
-            if form.is_valid():
-                category = form.save(commit=False)
-                category.user = request.user
+        elif "change_category_colour" in request.POST:
+            category_id = request.POST.get('category_id')
+            new_colour = request.POST.get('new_colour')
+            try: 
+                category = Category.objects.get(id=category_id)
+                category.category_colour = new_colour
                 category.save()
-                return Response({"message": "Category added successfully"}, status=status.HTTP_201_CREATED)
+            except Category.DoesNotExist:
+                messages.error(request, "The category does not exist.")
 
-        elif "change_category_colour" in request.data:
-            category_id = request.data.get('category_id')
-            new_colour = request.data.get('new_colour')
-            category = Category.objects.get(id=category_id, user=request.user)
-            category.category_colour = new_colour
-            category.save()
-            return Response({"message": "Category colour changed successfully"}, status=status.HTTP_200_OK)
+        elif "mark_category_pinned" in request.POST:
+            category_id = request.POST.get('category_id')
+            try:
+                category = Category.objects.get(id=category_id)
+                category.is_pinned = True
+                category.save()
+            except Category.DoesNotExist:
+                messages.error(request, "The category does not exist.")
 
-        elif "delete_category" in request.data:
-            category_id = request.data.get('category_id')
-            category = Category.objects.get(id=category_id, user=request.user)
-            category.delete()
-            return Response({"message": "Category deleted successfully"}, status=status.HTTP_200_OK)
+        elif "mark_category_unpinned" in request.POST:
+            category_id = request.POST.get('category_id')
+            try:
+                category = Category.objects.get(id=category_id)
+                category.is_pinned = False
+                category.save()
+            except Category.DoesNotExist:
+                messages.error(request, "The category does not exist.")
 
-        elif "delete_all_categories" in request.data:
-            category_ids = request.data.getlist('category_ids')
-            for category_id in category_ids:
-                category = Category.objects.get(id=category_id, user=request.user)
-                category.delete()
-            return Response({"message": "All categories deleted successfully"}, status=status.HTTP_200_OK)
-
-        return Response({"message": "Invalid data."}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
 
 
 
 
+#viewing list of all categories:
 
 
 
-
-
-# for the webpage after opening a category
-class CategoryPageView(LoginRequiredMixin, ListView):
+class CategoryPageView(ListView):
     model = Category
-    template_name = 'task-category.html'
+    template_name = "todo-list/category-page.html"
+    context_object_name = 'tasks'
+    paginator_class = CustomPagination
 
-    def get_paginate_by(self, queryset):
-        user_agent = get_user_agent(self.request)
-        if user_agent.is_mobile:
-            return 5
-        else:
-            return 8
+    
 
+    def get_queryset(self):
+        category_name = self.kwargs['category']
+        sort_order_category = self.kwargs.get('sort_order_category', 'date_created')
+        queryset = Task.objects.filter(category__category_name=category_name, user=self.request.user)
+
+        if sort_order_category == "newest":
+            queryset = queryset.order_by('-date_created')
+        elif sort_order_category == "oldest":
+            queryset = queryset.order_by('date_created')
+        elif sort_order_category == "is_pinned":
+            queryset = queryset.order_by('-is_pinned')
+        elif sort_order_category == "is_complete":
+            queryset = queryset.order_by('-is_complete')
+        elif sort_order_category == "due_time":
+            queryset = queryset.order_by('-due_time')
+
+        return queryset
+    
     def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        context['tasks'] = Task.objects.filter(category=self.get_object())
-        context['form'] = TaskForm()  # Add the form to the context
+        # Get the Category object
+        category_name = self.kwargs['category']
+        category = Category.objects.get(category_name=category_name)
+        # Add the category to the context
+        context['category'] = category
         return context
 
-    def get_object(self):
-        return get_object_or_404(Category, id=self.kwargs.get('pk'))
-
-    def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
-
-    def post(self, request, *args, **kwargs):
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            task = form.save(commit=False)
-            task.category = self.get_object()
-            task.save()
-            return redirect('category_page', pk=task.category.id)
-
-
-
-class CategoryPageAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self, pk):
-        try:
-            return Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, page=None, format=None):
-        category = self.get_object(pk)
-        tasks = Task.objects.filter(category=category)
-        # Implement pagination logic here based on the 'page' argument
-        task_serializer = TaskSerializer(tasks, many=True)
-        return Response(task_serializer.data)
-
-
-    def post(self, request, pk, format=None):
-        category = self.get_object(pk)
-        form = TaskForm(request.data)
-        if form.is_valid():
-            task = form.save(commit=False)
-            task.category = category
-            task.save()
-            return Response({"message": "Task added successfully"}, status=status.HTTP_201_CREATED)
-        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-
-
-
-
-
-# displaying all tasks
-class TaskView(LoginRequiredMixin, ListView):
-    template_name = 'tasks.html'
-    model = Task
-
-    def get_paginate_by(self, queryset):
-        user_agent = get_user_agent(self.request)
-        if user_agent.is_mobile:
-            return 5
-        else:
-            return 8
-
-    def get_queryset(self):
-        category_id = self.kwargs.get('category_id', None)
-        task_id = self.kwargs.get('task_id', None)
-        if task_id is not None:
-            queryset = Task.objects.filter(category_id=category_id, id=task_id, user=self.request.user)
-        else:
-            queryset = Task.objects.filter(user=self.request.user)
-        return queryset
-
+    
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
+        category = self.kwargs['category']
+
         if "add_task" in request.POST:
             form = TaskForm(request.POST)
             if form.is_valid():
                 task = form.save(commit=False)
-                task.user = request.user
+                task.user = user
+                task.category = category
                 task.save()
+                return redirect('category-page')
+            else:
+                return render(request, self.template_name, {'form': form})
 
         elif "delete_task" in request.POST:
             task_id = request.POST.get('task_id')
-
-            """ 
-            below is a method provided by the manager to retrieve a single object that matches 
-            the given lookup parameters. In this case, it’s looking for a Task that has an id equal to task_id and a user equal to request.user.
-            """
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.delete()
-            return redirect('tasks')
-        
+            try:
+                task = Task.objects.get(id=task_id, category=category, user=user)
+                task.delete()
+            except Task.DoesNotExist:
+                messages.error(request, "Task does not exist.")
+            
         elif "delete_all_tasks" in request.POST:
             task_ids = request.POST.getlist('task_ids')
             for task_id in task_ids:
-                task = Task.objects.get(id=task_id, user=request.user)
-                task.delete()
-            return redirect('tasks')
-        
-        elif "change_task_category" in request.POST:
+                try:
+                    task = Task.objects.get(id=task_id, category=category, user=user)
+                    task.delete()
+                except:
+                    messages.error(request, "Task cannot be deleted.")
+
+        elif "mark_task_pinned" in request.POST:
             task_id = request.POST.get('task_id')
-            new_category_id = request.POST.get('new_category')
-            new_category = Category.objects.get(id=new_category_id, user=request.user)
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.category = new_category
-            task.save()
+            try:
+                task = Task.objects.get(id=task_id, category=category, user=user)
+                task.is_pinned = True
+                task.save()
+            except:
+                messages.error("cannot mark task pinned")
+        
+        elif "mark_task_unpinned" in request.POST:
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id, category=category, user=user)
+                task.is_pinend = False
+                task.save()
+            except:
+                messages.error("cannot mark task unpinned")
 
         elif "mark_task_complete" in request.POST:
             task_id = request.POST.get('task_id')
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.is_complete = True
-            task.save()
+            try:
+                task = Task.objects.get(id=task_id, category=category, user=user)
+                task.is_complete = True
+                task.save()
+            except:
+                messages.error("cannot mark task complete")
 
         elif "mark_task_incomplete" in request.POST:
             task_id = request.POST.get('task_id')
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.is_complete = False
-            task.save()
+            try:
+                task = Task.objects.get(id=task_id, category=category, user=user)
+                task.is_complete = False
+                task.save()
+            except:
+                messages.error("cannot mark task incomplete")
+
+        
+        elif "change_due_time" in request.POST:
+            task_id = request.POST.get('task_id')
+            new_due_time = request.POST.get('new_due_time')  # The new due time should be provided in the POST data
+            try:
+                task = Task.objects.get(id=task_id, category=category, user=user)
+                task.due_time = timezone.make_aware(datetime.datetime.strptime(new_due_time, "%Y-%m-%d %H:%M:%S"))
+                task.save()
+            except Task.DoesNotExist:
+                messages.error(request, "Task does not exist.")
+            except ValueError:
+                messages.error(request, "Invalid date/time format. Please use 'YYYY-MM-DD HH:MM:SS'.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# view for displaying all tasks
+class TaskView(ListView):
+    template_name = 'all-tasks.html'
+    model = Task
+    paginator_class = CustomPagination
+
+
+    def get_queryset(self):
+        sort_order_task = self.request.GET.get('sort_order_task')
+        queryset = Task.objects.filter(user=self.request.user)
+
+        if sort_order_task == "newest":
+            queryset = queryset.order_by('-date_created')
+        elif sort_order_task == "oldest":
+            queryset = queryset.order_by('date_created')
+        elif sort_order_task == "is_pinned":
+            queryset = queryset.order_by('-is_pinned')
+        elif sort_order_task == "is_complete":
+            queryset = queryset.order_by('-is_complete')
+        return queryset
+    
+
+
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+         
+        if "add_task" in request.POST:
+            form = TaskForm(request.POST)
+            if form.is_valid():
+                task = form.save(commit=False)
+                task.user= user
+                task.save()
+                return redirect('todo-tasks')
+            else:
+                return render(request, self.template_name, {'form': form})
+        
+        elif "delete_task" in request.POST:
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id, user=user)
+                task.delete()
+            except Task.DoesNotExist:
+                messages.error(request, "Task does not exist.")
+
+        elif "delete_all_tasks" in request.POST:
+            task_ids = request.POST.getlist('task_ids')
+            for task_id in task_ids:
+                try:
+                    task = Task.objects.get(id=task_id, user=user)
+                    task.delete()
+                except Task.DoesNotExist:
+                    messages.error(request, "Task does not exist.")
 
         elif "mark_task_pinned" in request.POST:
-            task = request.POST.get('task_id')
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.is_pinned = True
-            task.save()
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id)
+                task.is_pinned = True
+                task.save()
+            except:
+                messages.error("Cannot mark task pinned.")
 
         elif "mark_task_unpinned" in request.POST:
             task_id = request.POST.get('task_id')
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.is_pinned = False
-            task.save()
+            try:
+                task = Task.objects.get(id=task_id)
+                task.is_pinned = False
+                task.save()
+            except:
+                messages.error("Cannot mark task unpinned.")
+
+        elif "mark_task_complete" in request.POST:
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id)
+                task.is_complete = True
+                task.save()
+            except:
+                messages.error("Cannot mark task complete.")
+        
+        elif "mark_task_incomplete" in request.POST:
+            task_id = request.POST.get('task_id')
+            try:
+                task = Task.objects.get(id=task_id)
+                task.is_complete = False
+                task.save()
+            except:
+                messages.error("Cannot mark task incomplete.")
 
         elif "change_due_time" in request.POST:
-            from datetime import datetime
-
             task_id = request.POST.get('task_id')
-            new_due_time_str = request.POST.get('new_due_time')
-            new_due_time = datetime.strptime(new_due_time_str, "%Y-%m-%d %H:%M:%S")
-            task = Task.objects.get(id=task_id, user=request.user)
-            task.due_time = new_due_time
-            task.save()
-            
+            new_due_time = request.POST.get('new_due_time')  # The new due time should be provided in the POST data
+            try:
+                task = Task.objects.get(id=task_id, user=user)
+                task.due_time = timezone.make_aware(datetime.datetime.strptime(new_due_time, "%Y-%m-%d %H:%M:%S"))
+                task.save()
+            except Task.DoesNotExist:
+                messages.error(request, "Task does not exist.")
+            except ValueError:
+                messages.error(request, "Invalid date/time format. Please use 'YYYY-MM-DD HH:MM:SS'.")
 
-        
-        
+
+
+
+
+
+
 
 
 

@@ -5,12 +5,12 @@ from .models import Category, Task
 class CategoryForm(forms.Form):
     class Meta:
         model = Category
-        fields = ('category_name', 'category_colour', 'is_pinned',)
+        fields = "__all__"
 
 
 class TaskForm(forms.Form):
     class Meta:
         model = Task
-        fields = ('category', 'title', 'description', 'is_complete', 'is_pinned', 'due_time')
+        fields = "__all__"
 
 

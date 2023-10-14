@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+
+<section>
+    <div class="main-background" style="position: absolute; width: 100%; height: 100%;">
+        <img src="{% static 'lofu.jpg' %}" alt="main-bg-image" class="background-image">
+
+        <div style="position: absolute; top: 85%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 70px; padding-left: 50px; padding-right: 50px; padding-top: 2px; padding-bottom: 2px; background-color: #AE92C9;border:2px ridge white; border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex;">
+            <div style="color: white; font-family: Vazirmatn; font-size: 25px; font-weight: bold;"> آلکتاس، مجموعه ای از پروژه های کوچک در قالب جنگو </div>
+        </div>
+        {% if user.is_authenticated %}
+        <a href="/projects">
+        <div style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 180px; padding-left: 50px; padding-right: 50px; padding-top: 2px; padding-bottom: 2px; background-color: #6B81D0;border:2px ridge white; border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex;">
+            <div style="color: white; font-family: Vazirmatn; font-size: 25px; font-weight: bold;">برو به پروژه ها</div>
+        </div>
+        </a>
+
+        <a href="/dashboard">
+            <div style="position: absolute; top: 29%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 180px; padding-left: 50px; padding-right: 50px; padding-top: 2px; padding-bottom: 2px; background-color: #6B81D0;border:2px ridge white; border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex;">
+                <div style="color: white; font-family: Vazirmatn; font-size: 25px; font-weight: bold;">برو به پروفایلم</div>
+            </div>
+            </a>
+        {% endif %}
+
+        {% if not user.is_authenticated %}
+        <div>
+            <a href="/signup">
+                <div class="button" style="position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 70px; padding-left: 50px; padding-right: 50px; padding-top: 2px; padding-bottom: 2px; background-color: #00BCC4;border:2px ridge white; border-radius: 20px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                    <div style="color: white; font-family: Vazirmatn; font-size: 30px; font-weight: 1000; word-wrap: break-word; width: 150%; padding-left: 70px;">عضویت</div>
+                </div>
+            </a>  
+            <a href="/login">
+                <div class="button" style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 220px; height: 70px; padding-left: 50px; padding-right: 50px; padding-top: 2px; padding-bottom: 2px; background-color: #C52F4F;border: 2px ridge white; border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex;">
+                    <div style="color: white; font-family: Vazirmatn; font-size: 30px; font-weight: 50; word-wrap: break-word;">ورود</div>
+                </div>
+            </a>
+
+        </div>
+        {% endif %}
+
+        <style>
+        .button:hover {
+            box-shadow: inset 0 0 7px #000000;
+        }
+        </style>
+
+    </div>
+</section>
+
+
+
+
+
+
+{% if not user.is_authenticated %}
+        <div>
+        
+        
+        </div>
+        {% endif %}
+
+{% endblock %}
+

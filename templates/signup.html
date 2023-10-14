@@ -1,17 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Sign up</title>
-    </head>
-    <body>
-        {% block content %}
-            <h1>عضویت</h1>
-            <form method="POST"> {%% csrf_token }
-                {{ form.as_p }}
-            </form>
-            <button type="submit">عضو شو</button>
-        {% endblock %}
-    </body>
+{% extends 'base.html' %}
 
-</html>
+
+
+{% block content %}
+
+    <div class="form-container" >
+        <h1 style="font-family: Jomhuria; font-size: 50px; padding-left: 40%; margin-top: 0px; color: white;">عضویت</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+
+        <div class="form-field">
+            {{ form.username.errors }}
+            {{ form.username.label_tag }} {{ form.username }}
+        </div>
+
+
+        <div class="form-field">
+            {{ form.email.errors }}
+            {{ form.email.label_tag }} {{ form.email }}
+        </div>
+
+
+        <div class="form-field">
+            {{ form.password1.errors }}
+            {{ form.password1.label_tag }} {{ form.password1 }}
+        </div>
+
+
+        <div class="form-field">
+            {{ form.password2.errors }}
+            {{ form.password2.label_tag }} {{ form.password2 }}
+        </div>
+        
+
+        <div class="form-field">
+            {{ form.city.errors }}
+            {{ form.city.label_tag }} {{ form.city }}
+        </div>
+
+        <input type="submit" class="signup-button" value="ثبت نام">
+
+        <a href="/login" class="no-account">حساب کاربری دارم</a>
+
+        <a href="#" class="gmail-account">  ورود با جیمیل</a>
+
+
+    </form>
+    </div>
+
+
+    
+    
+{% endblock %}

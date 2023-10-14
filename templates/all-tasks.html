@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+
+<img src="{% static 'Checklist.png' %}" alt="todo-app-image" style="display: flex; padding-top: 9%; padding-left: 40%;">   
+
+
+<div style="color: white; font-family: Vazirmatn; font-size: 22px; font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin-top: -250px; margin-right: 30px;">
+    <p style="margin-bottom: 0;">To Do App</p>
+    <p style="margin-top: 2px;"> لیست کار ها </p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px;">
+    {% for task in task_list %}
+    <div style="display: flex; flex-direction: row; align-items: center; margin-bottom: 20px;">
+        <div class="todo-task-field" style="border: 3px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 0px; width: 280px;">
+            <a href="#taskDetailModal{{ forloop.counter }}" style="color: white; text-align: center; align-content: center;">{{ task }}</a>
+        </div>
+
+        <div class="todo-task-field" style="border: 3px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 0px; width: fit-content; height: 20px;">
+            <a href="#taskModal{{ forloop.counter }}" style="color: white; text-align: center; align-content: center;">{{ task.category.category_name }}</a>
+        </div>
+
+        <div class="todo-task-field" style="border: 3px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 0px; width: fit-content; height: 20px;">
+            <a href="#{{ forloop.counter }}" style="color: white; text-align:center;">{{ task.category.category_colour }}</a>
+        </div>
+
+        {% if task.is_complete %}
+        <div style="display:flex;">
+            <img src="{% static 'doni.png' %}" alt="True">
+        </div>
+        {% else %}
+        <div style="display:flex;">
+            <img src="{% static 'undoni.png' %}" alt="True">
+        </div>
+        {% endif %}
+
+        <div class="todo-task-field" style="border:3px solid #ccc;border-radius:10px;padding-top:auto;padding-bottom:auto;width:auto;margin-left:auto;margin-right:auto;">
+            <a href="#{{ forloop.counter }}" style="color:white;text-align:center;">{{ task.due_time }}</a>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+    <style>
+        .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        margin-left: 50px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+        }
+
+        /* Show the modal when targeted */
+        .modal:target {
+        display: block;
+        }
+        </style>
+
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block content %}
+
+<img src="{% static 'Checklist.png' %}" alt="todo-app-image" style="display: flex; padding-top: 9%; padding-left: 40%;">   
+
+
+<div style="color: white; font-family: Vazirmatn; font-size: 22px; font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin-top: -250px; margin-right: 30px;">
+    <p style="margin-bottom: 0;">To Do App</p>
+    <p style="margin-top: 2px;"> لیست کار ها </p>
+</div>
+
+
+
+
+
+
+{% if task_list is not None %}
+
+
+
+<div style="margin-top: 20px;"></div>
+<div class="latest-todo-tasks" style="margin-top: -200px;">
+
+    <div style="margin-left: 30%; transform: translateY(50px);">
+        <a href="/tasks/page/1">
+            <div style="width: auto; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: red; border-radius: 5px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+                <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">  تمام کار ها</div>
+            </div>
+        </a>
+    </div>
+    <h1 style="color: white; text-align: right; margin-right: 35%;">آخرین کار ها</h1>
+
+    {% for task in task_list %}
+        <div class="todo-task-field" style="border: 3px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px; width: 400px; margin-left: 30%;">
+            <a href="#taskDetailModal{{ forloop.counter }}" style="color: white; text-align: center; align-content: center;">{{ task }}</a>
+        </div>
+
+        <div id="taskDetailModal{{ forloop.counter }}" class="modal">
+            <div class="modal-content">
+                <a href="#" class="close">×</a>
+                <!-- insert the content of modal here-->
+                
+                <div style="color: #888; align-items: center; border: 1px  solid black; padding: 2px; width: fit-content; margin-left: auto; margin-right: auto;">
+                    <h2 style="text-align: center;">{{ task.title }}</h2>
+                </div>
+        
+                <h2 style="text-align: center; direction: rtl;">ساخته شده در {{ task.date_created }}</h2>
+        
+                {% if task.is_complete %}
+                    <div style="display: flex; align-items: center; margin-left: 42%;">
+                        <img src="{% static 'doni.png' %}" alt="True">
+                        <h2 style="direction: rtl;">انجام شده </h2>
+                    </div>
+                {% else %}
+                    <div style="display: flex; align-items: center; margin-left: 42%;">
+                        <h2>انجام شده </h2>
+                        <img src="{% static 'undoni.png' %}" alt="True">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        
+    {% endfor %}
+    <style>
+        .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        margin-left: 50px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+        }
+
+        /* Show the modal when targeted */
+        .modal:target {
+        display: block;
+        }
+        </style>
+</div>
+
+
+{% endif %}
+
+<br>
+<br>
+<br>
+
+
+
+{% if category_list is not None %}
+
+
+
+<div class="latest-todo-categories">
+
+    <div style="margin-left: 30%; transform: translateY(50px);">
+        <a href="/tasks/page">
+            <div style="width: auto; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: red; border-radius: 5px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+                <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">  تمام دسته ها</div>
+            </div>
+        </a>
+    </div>
+
+    <h1 style="color: white; text-align: right; margin-right: 35%;">آخرین دسته ها</h1>
+    {% for category in category_list %}
+    <div class="todo-task-field" style="border: 3px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 10px; width: 400px; margin-left: 30%;">
+        <a href="#taskDetailModal" style="color: white; text-align: center; align-content: center;">{{ category }}</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+</div>
+
+{% endblock %}

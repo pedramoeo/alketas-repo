@@ -1,0 +1,61 @@
+body {
+    background-color: #6B81D0;
+}
+
+
+
+.login-button {
+    background-color: #0076b5; /* Green background */
+    border: none; /* No border */
+    color: white; /* White text */
+    padding: 15px 32px; /* Padding */
+    text-align: center; /* Centered text */
+    text-decoration: none; /* No underline */
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer; /* Pointer/hand icon on hover */
+ 
+    height: 50px;
+    width: 150px;
+
+    margin-left: 185px;
+
+    
+}
+
+
+.login-button:hover {
+    box-shadow: inset 0 0 7px #000000;
+}
+
+
+.other-account-container {
+    display: flex;
+}
+
+
+
+.yes-account-container {
+    background-color: #4AAAED;
+    padding-top: 3%;
+    margin-top: 0%;
+    margin-left: 30%;
+    height: 150px;
+    width: 250px; /* Adjust this value to change the width of the form */
+    border: 1px solid white; /* Add a border around the form */
+    padding: 22px; /* Add some padding inside the container */
+
+}
+
+
+.gmail-container {
+    background-color: #4AAAED;
+    padding-top: 1%;
+    margin-top: 0%;
+    margin-left: 0%;
+    height: 150px;
+    width: 250px; /* Adjust this value to change the width of the form */
+    border: 1px solid white; /* Add a border around the form */
+    padding: 25px; /* Add some padding inside the container */
+}

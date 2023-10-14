@@ -5,8 +5,9 @@ from account.models import CustomUser
 
 # Create your models here.
 class WeatherInfo(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, null=True)
     city_name = models.CharField(max_length=50, blank=True, null=True)
+    slug = models.SlugField(max_length=200, null=True)
 
     # this method overrides the city field and set it to user.city as long as
     # it's not been inputed by the user
@@ -17,3 +18,6 @@ class WeatherInfo(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.username}'s {self.city_name}"
+    
+    def get_absolute_url(self):
+        return f'/{self.slug}/'

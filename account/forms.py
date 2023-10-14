@@ -1,25 +1,35 @@
 from django import forms 
 from django.forms import PasswordInput
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import CustomUser, Profile
+from .models import CustomUser
 from django.contrib.auth import get_user_model, password_validation
+from django.contrib.auth.password_validation import validate_password
 
 
 
 
-
+"""
+widget are adding to allow us style the forms in the templates
+read more about the widgets.
+"""
 class SignUpForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ('username','email', 'password1', 'password2', 'city')
-
+        fields = ('username', 'email', 'password1', 'password2', 'city')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'userfield'}),
+            'email': forms.EmailInput(attrs={'class': 'emailfield'}),
+            'password1': forms.PasswordInput(attrs={'class': 'passwordfield'}),
+            'password2': forms.PasswordInput(attrs={'class': 'passwordfield'}),
+            'city': forms.TextInput(attrs={'class': 'cityfield'}),
+        }
 
 
 
 class LogInForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-
+    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'loginuser'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'loginpassword'}))
+    
 
 
 
@@ -34,20 +44,19 @@ class ChangeEmailForm(forms.Form):
             return email 
         
 
-class ProfilePictureForm(forms.Form):
-    class Meta:
-        model = Profile 
-        fields = ['profile_picture']
+class ChangePasswordForm(forms.Form):
+    password = forms.CharField(label='New Password', widget=forms.PasswordInput)
 
-    def clean_profile_picture(self):
-        Profile_picture = self.cleaned_data.get('Profile_picture', False)
-        if Profile_picture:
-            if Profile_picture.size > 10*1024*1024:
-                raise forms.ValidationError("Image file too large ( > 10mb )")
-            return Profile_picture
-        else:
-            raise forms.ValidationError("Couldn't read uploaded image")
-        
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        validate_password(password)
+        return password
+
+
+
+
+
+   
 
 
 # asking user input their password before deleting their account

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+
+<h1 style="text-align: center; margin-top: -70px;  font-family: Jomhuria; font-size: 75px; color: white;">ابزارها و پروژه ها</h1>
+
+<div class="cards-wrapper" style="display: flex; flex-direction: column; align-items: center;">
+
+  <div class="card-container">
+      <div class="card-image">
+        <img src="{% static 'weather-app.png' %}">
+      </div>
+      <div class="card-text">
+        <h2>
+          Weather App
+        </h2>
+        <h3>یک شهر را انتخاب کنید و وضعیت هوا را چک کنید</h3>
+        <br>
+        <!-- Move your button here -->
+        <a href="/weather" class="card-button">
+          <div style="margin-right: 20px; width: 1px; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: linear-gradient(90deg, #C52F4F 0%, #151A7B 100%); border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+              <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">برو</div>
+          </div>
+        </a>
+      </div>
+  </div>
+
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <div class="card-container">
+      <div class="card-image" style="margin-left: 180px;">
+        <img src="{% static 'todo-list-illust.png' %}">
+      </div>
+      <div class="card-text">
+        <h2>
+          To Do List App
+        </h2>
+        <h3>لیستی از کارهایی که باید و نباید انجام دهید بسازید </h3>
+        <br>
+        <!-- Move your button here -->
+        <a href="/todo-latest" class="card-button">
+          <div style="margin-right: 20px; width: 1px; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: linear-gradient(90deg, #C52F4F 0%, #151A7B 100%); border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+              <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">برو</div>
+          </div>
+        </a>
+      </div>
+  </div>
+
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
+
+  <div class="card-container">
+      <div class="card-image">
+        <img src="{% static 'quiz-app.png' %}">
+      </div>
+      <div class="card-text">
+        <h2>
+          Flashcard App
+        </h2>
+        <h3>فلش کارت اینتر اکتیو برای سرگرمی و یادگیری </h3>
+        <br>
+        <!-- Move your button here -->
+        <a href="#" class="card-button">
+          <div style="margin-right: 20px; width: 1px; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: linear-gradient(90deg, #C52F4F 0%, #151A7B 100%); border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+              <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">برو</div>
+          </div>
+        </a>
+      </div>
+  </div>
+
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <div class="card-container">
+    <div class="card-image">
+      <img src="{% static 'chat-app-illust.png' %}">
+    </div>
+    <div class="card-text">
+      <h2>
+        Chat App
+      </h2>
+      <h3>با افراد انلاین چت و گفت و گو کنید</h3>
+      <br>
+      <!-- Move your button here -->
+      <a href="#" class="card-button">
+        <div style="margin-right: 20px; width: 1px; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: linear-gradient(90deg, #C52F4F 0%, #151A7B 100%); border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+            <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">برو</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

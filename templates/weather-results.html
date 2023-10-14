@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% include 'weather.html' %}
+{% load weather_extras %}
+
+{% load static %}
+
+
+
+{% block content %}
+
+<img src="{% static 'weather.png' %}" alt="weather-app-image" style="display: flex; padding-top: 8%; padding-left: 40%;"> 
+
+<div style="color: white; font-family: Vazirmatn; font-size: 22px; font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin-top: -250px; margin-right: 30px;">
+    <p style="margin-bottom: 0;">Weather App</p>
+    <p style="margin-top: 2px;">آب و هوا</p>
+</div>
+
+
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; margin-top: -550px;">
+    <form method="POST" action="{% url 'weather' %}" style="display: flex;">
+        {% csrf_token %}
+        {{ form.city }}
+        <input type="submit" value="جست و جو" style="margin-left: 10%;">
+    </form>
+    </div>
+
+
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin-top: -525px; border: 1px;">
+    <h1>Weather in {{ weather_data.name }}</h1>
+    <p> {{ weather_data.main.temp|add:"-273" }} degrees</p> 
+</div>
+
+{% endblock %}

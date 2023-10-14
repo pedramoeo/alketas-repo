@@ -1,15 +1,37 @@
-<!DOCTYPE html>
-<html lang="fa">
-    <head>
-        <meta charset="UTF-8">
-        <title>Log In</title>
-    </head>
-    <body>
-            <h1>ورود به حساب</h1>
-            <form method="POST">{% csrf_token %}
-                {{form.as_p }}
-            </form>
-            <button type="submit">h3</button>
-    </body>
+{% extends 'base.html' %}
 
-</html>
+
+
+{% block content %}
+    
+<div class="login-form-container" >
+    <h1 style="font-family: Jomhuria; font-size: 50px; padding-left: 45%; padding-top: 0px; color: white;">ورود</h1>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="form-field">
+        {{ form.username.errors }}
+        {{ form.username.label_tag }} {{ form.username }}
+    </div>
+
+
+    <div class="form-field">
+        {{ form.password.errors }}
+        {{ form.password.label_tag }} {{ form.password }}
+    </div>
+
+
+
+    <input type="submit" class="login-button" value="ورود">
+
+    <a href="/signup" class="have-account">حساب کاربری ندارم</a>
+
+    <a href="#" class="gmail-account">  ورود با جیمیل</a>
+
+</form>
+</div>
+
+
+
+{% endblock %}

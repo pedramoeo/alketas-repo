@@ -5,113 +5,144 @@ from django.contrib.auth import get_user_model
 from account.models import *
 from .models import *
 from .forms import *
-from .serializers import *
 
 from django.views.generic import View, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django_user_agents.utils import get_user_agent
 
+
+from rest_framework.views import APIView 
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+
+
+
+User = get_user_model()
 
 
 
 
-# Create your views here.
-class LatestView(LoginRequiredMixin, View):
-    permission_classes = [IsAuthenticated]
+class CustomPagination(PageNumberPagination):
+    def get_page_size(self, request):
+        user_agent = get_user_agent(request)
+        if user_agent.is_mobile:
+            return 6
+        else:
+            return 10
 
+
+
+
+
+
+# 5 latest flashcards and flashcard categories
+class FlashcardLatestAPIView(APIView):
     def get(self, request, *args, **kwargs):
+        sort_order_flashcard = request.GET.get('sort_order_flashcard', 'date_created')
+        sort_order_category = request.GET.get('sort_order_category', 'date_created')
 
-    
-
-        sort_order_flashcard = request.GET.get('sort_order_task', 'date_created')
-        sort_order_flashcard_category = request.GET.get('sort_order_category', 'date_created')
-
-        if sort_order_flashcard not in ['date_created', '-date_created', 'is_pinned', '-is_pinned', 'due_time', '-due_time']:
+        if sort_order_flashcard not in ['date_created', '-date_created', 'language', '-language', 'is_pinned', '-is_pinned']:
             sort_order_flashcard = 'date_created'
+        
+        if sort_order_category not in ['front', '-front', 'is_pinned', '-is_pinned']:
+            sort_order_category = 'date_created'
 
-        if sort_order_flashcard_category not in ['date_created', '-date_created', 'is_pinned', '-is_pinned', 'language', '-language']:
-            sort_order_flashcard_category = 'date_created'
 
+        """
+        the queryset method (.none()) is used usually in instances where you need to provide a QuerySet,
+        but there isn't one to provide - 
+        such as calling a method or to give to a template.
+        """
 
-        latest_cards = Flashcard.objects.filter(user=request.user).order_by('-front')[:5]
-        latest_categories = FlashcardCategory.objects.filter(user=request.user).order_by('-category_name')[:5]
+        latest_flashcard = Flashcard.objects.none()
+        latest_category = FlashcardCategory.objects.none()
 
+        if request.user.is_authenticated:
+            latest_flashcard = Flashcard.objects.filter(user=request.user).order_by(sort_order_flashcard)[:5]
+            latest_category = FlashcardCategory.objects.filter(user=request.user).order_by(sort_order_category)[:5]
+
+        category_serializer = FlashcardCategorySerializer(latest_category, many=True)
+        flashcard_serializer = FlashcardSerializer(latest_flashcard, many=True)
 
         context = {
-            'latest_cards': latest_cards,
-            'latest_categories': latest_categories,
+            "latest_flashcardcategory": category_serializer.data,
+            "latest_flashcard": flashcard_serializer.data,
+            "sort_order_category": sort_order_category,
+            "sort_order_flashcard": sort_order_flashcard,
         }
-        return render(request, 'flashcard.html', context)
-    
+
+        return Response(context)
 
 
-class LatestAPIView(APIView):
+
+class FlashcardLatestAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        # making sure that the authenticated user is having access
-        try:
-            user = CustomUser.objects.get(username=request.user.username)
-        except ObjectDoesNotExist:
-            user = None
+        sort_order_flashcard = request.GET.get('sort_order_flashcard', 'date_created')
+        sort_order_category = request.GET.get('sort_order_category', 'date_created')
 
-
-        sort_order_flashcard = request.GET.get('sort_order_task', 'date_created')
-        sort_order_flashcard_category = request.GET.get('sort_order_category', 'date_created')
-
-        if sort_order_flashcard not in ['date_created', '-date_created', 'is_pinned', '-is_pinned', 'due_time', '-due_time']:
+        if sort_order_flashcard not in ['date_created', '-date_created', 'language', '-language', 'is_pinned', '-is_pinned']:
             sort_order_flashcard = 'date_created'
-
-        if sort_order_flashcard_category not in ['date_created', '-date_created', 'is_pinned', '-is_pinned', 'language', '-language']:
-            sort_order_flashcard_category = 'date_created'
-
-        latest_cards = Flashcard.objects.filter(user=user).order_by('-front')[:5]
-        latest_categories = FlashcardCategory.objects.filter(user=user).order_by('-category_name')[:5]
-
-        card_serializer = FlashcardSerializer(latest_cards, many=True)
-        category_serializer = FlashcardCategorySerializer(latest_categories, many=True)
+        
+        if sort_order_category not in ['front', '-front', 'is_pinned', '-is_pinned']:
+            sort_order_category = 'date_created'
 
 
+        """
+        the queryset method (.none()) is used usually in instances where you need to provide a QuerySet,
+        but there isn't one to provide - 
+        such as calling a method or to give to a template.
+        """
 
-        return Response({
-            'latest_cards': card_serializer.data,
-            'latest_categories': category_serializer.data,
-        })
+        latest_flashcard = Flashcard.objects.none()
+        latest_category = FlashcardCategory.objects.none()
+
+        if request.user.is_authenticated:
+            latest_flashcard = Flashcard.objects.filter(user=request.user).order_by(sort_order_flashcard)[:5]
+            latest_category = FlashcardCategory.objects.filter(user=request.user).order_by(sort_order_category)[:5]
+
+        category_serializer = FlashcardCategorySerializer(latest_category, many=True)
+        flashcard_serializer = FlashcardSerializer(latest_flashcard, many=True)
+        
+
+        context = {
+            "latest_flashcardcategory": category_serializer.data,
+            "latest_flashcard": flashcard_serializer.data,
+            "sort_order_category": sort_order_category,
+            "sort_order_flashcard": sort_order_flashcard,
+        }
+
+        return Response(context)
 
 
 
 
 
 
+# viewset for all flashcard categories
+class AllFlashcardCategoryAPIVIew(APIView):
+    def get(self, request, *args, **kwargs):
+        paginator = CustomPagination()
 
+        if request.user.is_authenticated:
+            category_id = self.kwargs.get('flashcardcategory_id', None)
+            if category_id is not None:
+                queryset = FlashcardCategory.objects.filter(user=request.user, id=category_id)
+            else:
+                queryset = FlashcardCategory.objects.filter(user=request.user)
 
+            page = paginator.paginate_queryset(queryset, request)
+            if page is not None:
+                serializer = FlashcardCategorySerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
 
-
-
-
-class AllFlashcardCategoryView(LoginRequiredMixin, ListView):
-    model = FlashcardCategory
-    template_name = 'all-category.html'
-
-    def get_paginate_by(self, queryset):
-        user_agent = get_user_agent(self.request)
-        if user_agent.is_mobile:
-            return 5
+            serializer = FlashcardCategorySerializer(queryset, many=True)
+            return Response(serializer.data)
         else:
-            return 8
-
-
-    def get_queryset(self):
-        category_id = self.kwargs.get('category_id', None)
-        if category_id is not None:
-            queryset = FlashcardCategory.objects.filter(user=self.request.user, id=category_id)
-        else:
-            queryset = FlashcardCategory.objects.filter(user=self.request.user)
-        return queryset
+            return Response({"detail": "Authentication credentials were not provided."}, status=401)
     
     def post(self, request, *args, **kwargs):
         user = self.request.user
+
         if "add_category" in request.POST:
             form = FlashcardcategoryCreationForm(request.POST)
             if form.is_valid():
@@ -119,32 +150,37 @@ class AllFlashcardCategoryView(LoginRequiredMixin, ListView):
                 category.user = request.user
                 category.save()
 
-        elif "delete_category" in request.POST:
-            Flashcardcategory_id = request.POST.get('flashcardcategory_id', None)
-            categories = FlashcardCategory.objects.filter(user=self.request.user, id=Flashcardcategory_id)
-            categories.delete()
-
-        elif "delete_all_categories" in request.POST:
-            flashcardcategory_ids = request.POST.getlist('flashcardcategory_ids', None)
-            for flashcardcategory_id in flashcardcategory_ids:
-                categories = FlashcardCategory.objects.filter(user=self.request.user, id=flashcardcategory_id)
-                categories.delete()
-
         elif "change_category_language" in request.POST:
-            flashcardcategory_id = request.POST.get('flashcardcategory_id', None)
+            category_id = request.POST.get('flashcardcategory_id')
             new_language = request.POST.get('new_language')
-            category = FlashcardCategory.objects.get(user=self.request.user, id=flashcardcategory_id)
+            category = FlashcardCategory.objects.get(id=category_id, user=request.user)
             category.language = new_language
             category.save()
 
+        elif "delete_category" in request.POST:
+            category_id = request.POST.get('flashcardcategory_id')
+            category = FlashcardCategory.objects.get(id=category_id, user=request.user)
+            category.delete()
 
+        elif "delete_all_categories" in request.POST:
+            category_ids = request.POST.getlist('flashcardcategory_ids')
+            for category_id in category_ids:
+                category = FlashcardCategory.objects.get(id=category_id, user=request.user)
+                category.delete()
 
+        elif "mark_category_pinned" in request.POST:
+            category_id = request.POST.get('flashcardcategory_id')
+            category = FlashcardCategory.objects.get(id=category_id, user=request.user)
+            category.is_pinned = True
+            category.save()
 
+        elif "mark_category_unpinned" in request.POST:
+            category_id = request.POST.get('flashcardcategory_id')
+            category = FlashcardCategory.objects.get(id=category_id, user=request.user)
+            category.is_pinned = False
+            category.save()        
 
-
-
-
-
+        return Response({"message": "Operation completed"})
 
 
 
@@ -154,7 +190,7 @@ class AllFlashcardCategoryView(LoginRequiredMixin, ListView):
 
 
 # each page of every category
-class FlashcardCategoryPageView(LoginRequiredMixin, ListView):
+class FlashcardCategoryPageAPIView(LoginRequiredMixin, ListView):
     model = FlashcardCategory
     template_name = 'flashcard-category.html'
 
@@ -174,7 +210,7 @@ class FlashcardCategoryPageView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         category_id = self.kwargs.get('category_id')
         category_name = self.kwargs.get('category_name')
-        flashcards = Flashcard.objects.filter(category__id=category_id)
+        flashcards = Flashcard.objects.filter(category_id=category_id)
 
 
         sort_by = self.request.GET.get('sort_by', None)
@@ -202,33 +238,35 @@ class FlashcardCategoryPageView(LoginRequiredMixin, ListView):
 
 
 
-class FlashcardView(ListView):
-    model = Flashcard
-    template_name = 'flashcards.html'  # replace with your template name
+# viewset for all flashcards
+class FlashcardAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        paginator = CustomPagination()
 
-    def get_paginate_by(self, queryset):
-        user_agent = get_user_agent(self.request)
-        if user_agent.is_mobile:
-            return 6
+
+        if request.user.is_authenticated:
+            flashcard_id = self.kwargs.get('flashcard_id', None)
+
+            sort_by = request.query_params.get('sort_by', None)
+
+            if flashcard_id is not None:
+                if sort_by == "newest":
+                    queryset = Flashcard.objects.filter(id=flashcard_id).order_by('-date_created')
+                elif sort_by == "oldest":
+                    queryset = Flashcard.objects.filter(id=flashcard_id).order_by('date_created')
+                elif sort_by == "is_pinned":
+                    queryset = Flashcard.objects.filter(id=flashcard_id).order_by('-is_pinned')
+
+            else:
+                queryset = Flashcard.objects.none()
+
+            page = paginator.paginate_queryset(queryset, request)
+        
+            if page is not None:
+                serializer = FlashcardSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
         else:
-            return 9
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(user=self.request.user)
-
-        sort_by = self.request.GET.get('sort_by', None)
-        if sort_by is not None:
-            if sort_by == 'newest':
-                queryset = queryset.order_by('-date_created')
-            elif sort_by == 'oldest':
-                queryset = queryset.order_by('date_created')
-            elif sort_by == 'is_pinned':
-                queryset = queryset.order_by('-is_pinned')
-
-        return queryset
-
-
+            return Response({"details": "Authentication credentials were not provided."}, status=401)
 
 
 
