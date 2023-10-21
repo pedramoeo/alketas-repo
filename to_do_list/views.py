@@ -316,6 +316,7 @@ class TaskView(ListView):
             queryset = queryset.order_by('-is_pinned')
         elif sort_order_task == "is_complete":
             queryset = queryset.order_by('-is_complete')
+            
         return queryset
     
 
