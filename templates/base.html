@@ -1,4 +1,6 @@
 {% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +17,7 @@
         <div style="margin-right: 50px;"></div>
         
         {% if user.is_authenticated %}
+        
         <a href="/logout">
             <div style="margin-right: 20px; width: 1px; height: 30px; padding-left: 60px; padding-right: 60px; padding-top: 2px; padding-bottom: 2px; background: red; border-radius: 20px; overflow: hidden; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
                 <div style="color:white ;font-size :16px ;font-family :Vazirmatn ;font-weight :700 ;word-wrap :break-word">خروج</div>

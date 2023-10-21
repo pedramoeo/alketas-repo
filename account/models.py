@@ -1,11 +1,14 @@
 from django.db import models
+
 from django.contrib.auth.models import AbstractUser, Group, Permission
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-# Create your models here.
+
 class CustomUser(AbstractUser):
+
     city = models.CharField(max_length=12, blank=True, null=True)
     
 
@@ -22,6 +25,8 @@ class CustomUser(AbstractUser):
         related_name="customuser_set",
         related_query_name="customuser",
     )
+
+    
 
     user_permissions = models.ManyToManyField(
         Permission,

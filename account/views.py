@@ -37,8 +37,6 @@ User = get_user_model()
 
 
 
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(FormView):
     form_class = SignUpForm
@@ -49,6 +47,7 @@ class SignupView(FormView):
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password')
         user = authenticate(username=username, password=password)
+
         if user is not None:
             login(self.request, user)
         else:
@@ -90,17 +89,6 @@ def logout(request):
     """
     auth_logout(request)
     return redirect('/login')
-
-
-
-
-
-
-
-
-
-
-
 
 
 
